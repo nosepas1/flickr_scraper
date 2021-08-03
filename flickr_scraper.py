@@ -59,8 +59,10 @@ if __name__ == '__main__':
 
     # Check key
     help_url = 'https://www.flickr.com/services/apps/create/apply'
-    assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
+    #assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
 
     get_urls(search=opt.search,  # search term
              n=opt.n,  # max number of images
-             download=opt.download)  # download images
+             download=opt.download, # download images
+             key=opt.key,
+             secret=opt.secret)  
