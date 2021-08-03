@@ -19,7 +19,7 @@ def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret
                          sort='relevance')
 
     if download:
-        dir = os.getcwd() + os.sep + 'images' + os.sep + search.replace(' ', '_') + os.sep  # save directory
+        dir = os.getcwd() + os.sep + search.replace(' ', '') + os.sep  # save directory
         if not os.path.exists(dir):
             os.makedirs(dir)
 
