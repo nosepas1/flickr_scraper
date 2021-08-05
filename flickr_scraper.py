@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--search', type=str, default='honeybees on flowers', help='flickr search term')
     parser.add_argument('--n', type=int, default=10, help='number of images')
-    parser.add_argument('--download', type=bool, default=False, action='store_true', help='download images')
+    parser.add_argument('--download', action='store_true', help='download images')
     parser.add_argument('--key', type=str, default='', help='API key')
     parser.add_argument('--secret', type=str, default='', help='API secret')
     parser.add_argument('--save_dir', type=str, default='', help='folder where to download images')
