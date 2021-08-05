@@ -10,7 +10,7 @@ from flickrapi import FlickrAPI
 from utils.general import download_uri
 
 
-def get_urls(search='honeybees on flowers', n=10, key='', secret=''):
+def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv):
     t = time.time()
     flickr = FlickrAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -35,8 +35,9 @@ def get_urls(search='honeybees on flowers', n=10, key='', secret=''):
 
             except:
                 print('%g/%g error...' % (i, n))
-    pd_urls = pd.Series(urls)
-    pd_urls.to_csv("./all_urls.csv")
+    if urls_csv:
+        pd_urls = pd.Series(urls)
+        pd_urls.to_csv("./all_urls.csv")
     return urls, set(urls)
 
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('--search', type=str, default='honeybees on flowers', help='flickr search term')
     parser.add_argument('--n', type=int, default=10, help='number of images')
     parser.add_argument('--download', action='store_true', help='download images')
+    parser.add_argument('--get_urls', action='store_true', help='obtain csv files with all urls')
     parser.add_argument('--key', type=str, default='', help='API key')
     parser.add_argument('--secret', type=str, default='', help='API secret')
     parser.add_argument('--save_dir', type=str, default='', help='folder where to download images')
@@ -77,7 +79,8 @@ if __name__ == '__main__':
     _, urls = get_urls(search=opt.search,  # search term
                        n=opt.n,  # max number of images
                        key=opt.key,
-                       secret=opt.secret)
+                       secret=opt.secret, 
+                       urls_csv=opt.get_urls)
 
     if opt.download:
         download_pictures(urls=urls, save_dir=opt.save_dir, search=opt.search)
