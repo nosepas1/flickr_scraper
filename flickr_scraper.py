@@ -8,6 +8,36 @@ from flickrapi import FlickrAPI
 
 from utils.general import download_uri
 
+SIZES = ["url_o", "url_k", "url_h", "url_l", "url_c"]  # order of preference
+
+def get_photos(KEY, SECRET, search):
+    extras = ','.join(SIZES)
+    flickr = FlickerAPI(KEY, SECRET)
+    photos = flickr.walk(text=search, extras=extras, per_page=500, sort='relevance')
+    return photos
+
+def get_url(photo):
+    for i in range(len(SIZES)):
+        url = photo.get(SIZES[i])
+        if url:
+            return url
+        
+def get_urls(search, n_max):
+    photos = get_photos(search)
+    counter = 0
+    urls = []
+    
+    for photo in photos:
+        if counter < n_max:
+            url = get_url(photo)
+            if url:
+                urls.append(url)
+                counter += 1
+        else:
+            break
+    return urls 
+    
+
 def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret='', savedir = None):
     t = time.time()
     flickr = FlickrAPI(key, secret)
