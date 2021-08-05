@@ -4,41 +4,13 @@ import argparse
 import os
 import time
 
+import pandas as pd
 from flickrapi import FlickrAPI
 
 from utils.general import download_uri
 
-SIZES = ["url_o", "url_k", "url_h", "url_l", "url_c"]  # order of preference
 
-def get_photos(KEY, SECRET, search):
-    extras = ','.join(SIZES)
-    flickr = FlickerAPI(KEY, SECRET)
-    photos = flickr.walk(text=search, extras=extras, per_page=500, sort='relevance')
-    return photos
-
-def get_url(photo):
-    for i in range(len(SIZES)):
-        url = photo.get(SIZES[i])
-        if url:
-            return url
-        
-def get_urls(search, n_max):
-    photos = get_photos(search)
-    counter = 0
-    urls = []
-    
-    for photo in photos:
-        if counter < n_max:
-            url = get_url(photo)
-            if url:
-                urls.append(url)
-                counter += 1
-        else:
-            break
-    return urls 
-    
-
-def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret='', savedir = None):
+def get_urls(search='honeybees on flowers', n=10, key='', secret=''):
     t = time.time()
     flickr = FlickrAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -47,14 +19,6 @@ def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret
                          per_page=500,  # 1-500
                          license=license,
                          sort='relevance')
-
-    if download:
-        if savedir is None:
-            dir = os.getcwd() + os.sep + search.replace(' ', '') + os.sep  # save directory
-        else:
-            dir = savedir
-        if not os.path.exists(dir):
-            os.makedirs(dir)
 
     urls = []
     for i, photo in enumerate(photos):
@@ -66,38 +30,54 @@ def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret
                     url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
                           (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
 
-                # download
-                if download:
-                    download_uri(url, dir)
-
                 urls.append(url)
                 print('%g/%g %s' % (i, n, url))
+
             except:
                 print('%g/%g error...' % (i, n))
+    pd_urls = pd.Series(urls)
+    pd_urls.to_csv("./all_urls.csv")
+    return urls, set(urls)
+
+
+def download_pictures(urls, save_dir, search):
+    t = time.time()
+    if save_dir is None:
+        dir = os.getcwd() + os.sep + search.replace(' ', '') + os.sep  # save directory
+    else:
+        dir = save_dir
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    # download pictures
+    for url in urls:
+        download_uri(url, dir)
 
     # import pandas as pd
     # urls = pd.Series(urls)
     # urls.to_csv(search + "_urls.csv")
-    print('Done. (%.1fs)' % (time.time() - t) + ('\nAll images saved to %s' % dir if download else ''))
+    print('Done. (%.1fs)' % (time.time() - t))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--search', type=str, default='honeybees on flowers', help='flickr search term')
     parser.add_argument('--n', type=int, default=10, help='number of images')
-    parser.add_argument('--download', action='store_true', help='download images')
+    parser.add_argument('--download', type=bool, default=False, action='store_true', help='download images')
     parser.add_argument('--key', type=str, default='', help='API key')
     parser.add_argument('--secret', type=str, default='', help='API secret')
-    parser.add_argument('--savedir', type=str, default='', help='folder where to download images')
+    parser.add_argument('--save_dir', type=str, default='', help='folder where to download images')
     opt = parser.parse_args()
 
     # Check key
     help_url = 'https://www.flickr.com/services/apps/create/apply'
-    #assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
 
-    get_urls(search=opt.search,  # search term
-             n=opt.n,  # max number of images
-             download=opt.download, # download images
-             key=opt.key,
-             secret=opt.secret,
-            savedir = opt.savedir)  
+    # assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
+
+    _, urls = get_urls(search=opt.search,  # search term
+                       n=opt.n,  # max number of images
+                       key=opt.key,
+                       secret=opt.secret)
+
+    if opt.download:
+        download_pictures(urls=urls, save_dir=opt.save_dir, search=opt.search)
