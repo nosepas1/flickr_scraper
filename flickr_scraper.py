@@ -8,7 +8,7 @@ from flickrapi import FlickrAPI
 
 from utils.general import download_uri
 
-def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret=''):
+def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret='', savedir = None):
     t = time.time()
     flickr = FlickrAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -19,7 +19,10 @@ def get_urls(search='honeybees on flowers', n=10, download=False, key='', secret
                          sort='relevance')
 
     if download:
-        dir = os.getcwd() + os.sep + search.replace(' ', '') + os.sep  # save directory
+        if savedir is None:
+            dir = os.getcwd() + os.sep + search.replace(' ', '') + os.sep  # save directory
+        else:
+            dir = savedir
         if not os.path.exists(dir):
             os.makedirs(dir)
 
@@ -55,6 +58,7 @@ if __name__ == '__main__':
     parser.add_argument('--download', action='store_true', help='download images')
     parser.add_argument('--key', type=str, default='', help='API key')
     parser.add_argument('--secret', type=str, default='', help='API secret')
+    parser.add_argument('--savedir', type=str, default='', help='folder where to download images')
     opt = parser.parse_args()
 
     # Check key
@@ -65,4 +69,5 @@ if __name__ == '__main__':
              n=opt.n,  # max number of images
              download=opt.download, # download images
              key=opt.key,
-             secret=opt.secret)  
+             secret=opt.secret,
+            savedir = opt.savedir)  
