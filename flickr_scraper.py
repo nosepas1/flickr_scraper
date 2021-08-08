@@ -11,7 +11,7 @@ import pickle
 from utils.general import download_uri
 
 
-def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv= False):
+def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv=False):
     t = time.time()
     flickr = FlickrAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -31,7 +31,7 @@ def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv= F
                       (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
 
             urls.append(url)
-            print('%g/%g %s' % (i, n, url))
+            # print('%g/%g %s' % (i, n, url))
 
         except:
             print('%g/%g error...' % (i, n))
@@ -53,7 +53,10 @@ def download_pictures(urls, save_dir, search, n):
     # download pictures
     for j, url in enumerate(tqdm(urls)):
         if j < n:
-            download_uri(url, dir)
+            try:
+                download_uri(url, dir)
+            except:
+                pass
 
     # import pandas as pd
     # urls = pd.Series(urls)
