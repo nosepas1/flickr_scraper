@@ -11,7 +11,7 @@ import pickle
 from utils.general import download_uri
 
 
-def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv):
+def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv= False):
     t = time.time()
     flickr = FlickrAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
