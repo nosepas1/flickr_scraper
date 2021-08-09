@@ -32,31 +32,31 @@ def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv=Fa
 
             urls.append(url)
             # print('%g/%g %s' % (i, n, url))
-
+            if len(urls) == n:
+                break
         except:
             print('%g/%g error...' % (i, n))
     if urls_csv:
         pd_urls = pd.Series(urls)
         pd_urls.to_csv("./all_urls.csv")
-    return set(urls)
+    return list(set(urls))
 
 
 def download_pictures(urls, save_dir, search, n):
     t = time.time()
     if save_dir is None:
         dir = os.getcwd() + os.sep + search.replace(' ', '_') + os.sep  # save directory
-    else:
-        dir = save_dir
+    elif save_dir[-1] != os.sep:
+        dir = save_dir + os.sep
     if not os.path.exists(dir):
         os.makedirs(dir)
 
     # download pictures
-    for j, url in enumerate(tqdm(urls)):
-        if j < n:
-            try:
-                download_uri(url, dir)
-            except:
-                pass
+    for j, url in enumerate(tqdm(urls[:n])):
+        try:
+            download_uri(url, dir)
+        except:
+            pass
 
     # import pandas as pd
     # urls = pd.Series(urls)
