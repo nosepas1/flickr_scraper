@@ -42,6 +42,36 @@ def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv=Fa
     return list(set(urls))
 
 
+def get_user(search='internetarchivebookimages', n=10, key='', secret='', urls_csv=False):
+    t = time.time()
+    flickr = FlickrAPI(key, secret)
+    license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
+    photos = flickr.walk_user(user_id=search,  # http://www.flickr.com/services/api/flickr.photos.search.html
+                            extras='url_o',
+                            per_page=500,  # 1-500
+                            license=license,
+                            sort='relevance')
+
+    urls = []
+    for i, photo in enumerate(photos):
+        try:
+            # construct url https://www.flickr.com/services/api/misc.urls.html
+            url = photo.get('url_o')  # original size
+            if url is None:
+                url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
+                      (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
+
+            urls.append(url)
+            # print('%g/%g %s' % (i, n, url))
+            if len(urls) == n:
+                break
+        except:
+            print('%g/%g error...' % (i, n))
+    if urls_csv:
+        pd_urls = pd.Series(urls)
+        pd_urls.to_csv("./all_urls.csv")
+    return list(set(urls))
+
 def download_pictures(urls, save_dir, search, n):
     t = time.time()
     if save_dir is None:
@@ -73,18 +103,31 @@ if __name__ == '__main__':
     parser.add_argument('--key', type=str, default='', help='API key')
     parser.add_argument('--secret', type=str, default='', help='API secret')
     parser.add_argument('--save_dir', type=str, default='', help='folder where to download images')
+    parser.add_argument('--stream', type=str, default='general', help='where to get images from, one between ["general","user","group"]')
     opt = parser.parse_args()
 
     # Check key
     help_url = 'https://www.flickr.com/services/apps/create/apply'
 
     # assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
-
-    urls = get_urls(search=opt.search,  # search term
-                       n=opt.n,  # max number of images
-                       key=opt.key,
-                       secret=opt.secret, 
-                       urls_csv=opt.get_urls)
+    if opt.stream == 'general':
+        urls = get_urls(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
+    elif opt.stream == 'user':
+        urls = get_user(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
+    elif opt.stream == 'group':
+        urls = get_group(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
 
     if opt.download:
         download_pictures(urls=urls, save_dir=opt.save_dir, search=opt.search, n =opt.n)
