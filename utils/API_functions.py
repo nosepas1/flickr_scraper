@@ -3,8 +3,8 @@ import time
 from tqdm import tqdm 
 import pandas as pd
 import pickle
-from utils.general import download_uri
-from custom import customAPI
+from .general import download_uri
+from ..custom import customAPI
         
 
 
