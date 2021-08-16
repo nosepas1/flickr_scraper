@@ -5,15 +5,15 @@ import os
 import time
 from tqdm import tqdm 
 import pandas as pd
-from flickrapi import FlickrAPI
 import pickle
-
 from utils.general import download_uri
+from custom import customAPI
+        
 
 
 def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv=False):
     t = time.time()
-    flickr = FlickrAPI(key, secret)
+    flickr = customAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
     photos = flickr.walk(text=search,  # http://www.flickr.com/services/api/flickr.photos.search.html
                          extras='url_o',
@@ -51,6 +51,35 @@ def get_user(search='internetarchivebookimages', n=10, key='', secret='', urls_c
                             per_page=500,  # 1-500
                             license=license,
                             sort='relevance')
+
+    urls = []
+    for i, photo in enumerate(photos):
+        try:
+            # construct url https://www.flickr.com/services/api/misc.urls.html
+            url = photo.get('url_o')  # original size
+            if url is None:
+                url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
+                      (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
+
+            urls.append(url)
+            # print('%g/%g %s' % (i, n, url))
+            if len(urls) == n:
+                break
+        except:
+            print('%g/%g error...' % (i, n))
+    if urls_csv:
+        pd_urls = pd.Series(urls)
+        pd_urls.to_csv("./all_urls.csv")
+    return list(set(urls))
+
+def get_group(search='', n=10, key='', secret='', urls_csv=False):
+    t = time.time()
+    flickr = customAPI(key, secret)
+    license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
+    photos = flickr.walk_group(group_id=search,  
+                            extras='url_o',
+                            per_page=500,  # 1-500
+                            license=license,)
 
     urls = []
     for i, photo in enumerate(photos):
