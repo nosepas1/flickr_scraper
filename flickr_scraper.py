@@ -11,7 +11,7 @@ from custom import customAPI
         
 
 
-def get_urls(search='honeybees on flowers', n=10, key='', secret='', urls_csv=False):
+def get_stream(search='honeybees on flowers', n=10, key='', secret='', urls_csv=False):
     t = time.time()
     flickr = customAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -122,6 +122,32 @@ def download_pictures(urls, save_dir, search, n):
     # urls.to_csv(search + "_urls.csv")
     print('Done. (%.1fs)' % (time.time() - t))
 
+def get_urls(opt):
+    assert opt.stream in ['general','user','group']
+
+    if opt.stream == 'general':
+        urls = get_stream(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
+    elif opt.stream == 'user':
+        urls = get_user(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
+    elif opt.stream == 'group':
+        urls = get_group(search=opt.search,  # search term
+                           n=opt.n,  # max number of images
+                           key=opt.key,
+                           secret=opt.secret, 
+                           urls_csv=opt.get_urls)
+    return urls
+
+def urls_download(urls, opt):
+    download_pictures(urls=urls, save_dir=opt.save_dir, search=opt.search, n =opt.n)
+    return
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -140,7 +166,7 @@ if __name__ == '__main__':
 
     # assert key and secret, f'Flickr API key required in flickr_scraper.py L11-12. To apply visit {help_url}'
     if opt.stream == 'general':
-        urls = get_urls(search=opt.search,  # search term
+        urls = get_stream(search=opt.search,  # search term
                            n=opt.n,  # max number of images
                            key=opt.key,
                            secret=opt.secret, 
