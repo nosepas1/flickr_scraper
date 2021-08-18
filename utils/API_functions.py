@@ -8,7 +8,7 @@ from ..custom import customAPI
         
 
 
-def get_stream(search='honeybees on flowers', n=10, key='', secret='', urls_csv=False):
+def get_stream(search='', n=10, key='', secret='', ignore=[]):
     t = time.time()
     flickr = customAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -26,22 +26,19 @@ def get_stream(search='honeybees on flowers', n=10, key='', secret='', urls_csv=
             if url is None:
                 url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
                       (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
-
-            urls.append(url)
+            if url not in ignore:            
+                urls.append(url)
             # print('%g/%g %s' % (i, n, url))
-            if len(urls) == n:
+            if len(set(urls)) == n:
                 break
         except:
             print('%g/%g error...' % (i, n))
-    if urls_csv:
-        pd_urls = pd.Series(urls)
-        pd_urls.to_csv("./all_urls.csv")
     return list(set(urls))
 
 
-def get_user(search='internetarchivebookimages', n=10, key='', secret='', urls_csv=False):
+def get_user(search='', n=10, key='', secret='', ignore=[]):
     t = time.time()
-    flickr = FlickrAPI(key, secret)
+    flickr = customAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
     photos = flickr.walk_user(user_id=search,  # http://www.flickr.com/services/api/flickr.photos.search.html
                             extras='url_o',
@@ -57,19 +54,16 @@ def get_user(search='internetarchivebookimages', n=10, key='', secret='', urls_c
             if url is None:
                 url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
                       (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
-
-            urls.append(url)
+            if url not in ignore:            
+                urls.append(url)
             # print('%g/%g %s' % (i, n, url))
-            if len(urls) == n:
+            if len(set(urls)) == n:
                 break
         except:
             print('%g/%g error...' % (i, n))
-    if urls_csv:
-        pd_urls = pd.Series(urls)
-        pd_urls.to_csv("./all_urls.csv")
     return list(set(urls))
 
-def get_group(search='', n=10, key='', secret='', urls_csv=False):
+def get_group(search='', n=10, key='', secret='', ignore=[]):
     t = time.time()
     flickr = customAPI(key, secret)
     license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
@@ -86,16 +80,13 @@ def get_group(search='', n=10, key='', secret='', urls_csv=False):
             if url is None:
                 url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
                       (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
-
-            urls.append(url)
+            if url not in ignore:            
+                urls.append(url)
             # print('%g/%g %s' % (i, n, url))
-            if len(urls) == n:
+            if len(set(urls)) == n:
                 break
         except:
             print('%g/%g error...' % (i, n))
-    if urls_csv:
-        pd_urls = pd.Series(urls)
-        pd_urls.to_csv("./all_urls.csv")
     return list(set(urls))
 
 def download_pictures(urls, save_dir, search, n):
@@ -127,19 +118,20 @@ def get_urls(opt):
                            n=opt.n,  # max number of images
                            key=opt.key,
                            secret=opt.secret, 
-                           urls_csv=opt.get_urls)
+                           ignore=opt.ignore)
     elif opt.stream == 'user':
         urls = get_user(search=opt.search,  # search term
                            n=opt.n,  # max number of images
                            key=opt.key,
                            secret=opt.secret, 
-                           urls_csv=opt.get_urls)
+                           ignore=opt.ignore)
     elif opt.stream == 'group':
         urls = get_group(search=opt.search,  # search term
                            n=opt.n,  # max number of images
                            key=opt.key,
                            secret=opt.secret, 
-                           urls_csv=opt.get_urls)
+                           ignore=opt.ignore)
+    
     return urls
 
 def urls_download(urls, opt):
