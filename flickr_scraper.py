@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # Check key
     help_url = 'https://www.flickr.com/services/apps/create/apply'
 
-   urls = get_urls(opt)
+    urls = get_urls(opt)
 
     if opt.download:
         urls_download(urls,opt)
