@@ -26,3 +26,25 @@ class customAPI(FlickrAPI):
 
         return self.data_walker(self.groups_pools_getPhotos,
                                 group_id=group_id, per_page=per_page, **kwargs)
+
+    @require_format('etree')
+    def walk_album(self, album_id='', per_page=50, **kwargs):
+        """walk_group(self, group_id, per_page=50, ...) -> \
+                generator, yields each photo in an album photostream.
+        :Parameters:
+            album_id
+                the album ID 
+            per_page
+                the number of photos that are fetched in one call to
+                Flickr.
+        Other arguments can be passed, as documented in the
+        flickr.photosets.getPhotos_ API call in the Flickr API
+        documentation, except for ``page`` because all pages will be
+        returned eventually.
+        .. _flickr.photosets.getPhotos:
+            https://www.flickr.com/services/api/flickr.photosets.getPhotos.html
+        Uses the ElementTree format, incompatible with other formats.
+        """
+
+        return self.data_walker(self.photosets_getPhotos,
+                                photoset_id=album_id, per_page=per_page, **kwargs)
