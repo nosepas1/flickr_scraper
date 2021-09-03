@@ -89,6 +89,32 @@ def get_group(search='', n=10, key='', secret='', ignore=[]):
             print('%g/%g error...' % (i, n))
     return list(set(urls))
 
+def get_album(search='', n=10, key='', secret='', ignore=[]):
+    t = time.time()
+    flickr = customAPI(key, secret)
+    license = ()  # https://www.flickr.com/services/api/explore/?method=flickr.photos.licenses.getInfo
+    photos = flickr.walk_album(album_id=search,  
+                            extras='url_o',
+                            per_page=500,  # 1-500
+                            license=license,)
+
+    urls = []
+    for i, photo in enumerate(photos):
+        try:
+            # construct url https://www.flickr.com/services/api/misc.urls.html
+            url = photo.get('url_o')  # original size
+            if url is None:
+                url = 'https://farm%s.staticflickr.com/%s/%s_%s_b.jpg' % \
+                      (photo.get('farm'), photo.get('server'), photo.get('id'), photo.get('secret'))  # large size
+            if url not in ignore:            
+                urls.append(url)
+            # print('%g/%g %s' % (i, n, url))
+            if len(set(urls)) == n:
+                break
+        except:
+            print('%g/%g error...' % (i, n))
+    return list(set(urls))
+
 def download_pictures(urls, save_dir, search, n):
     t = time.time()
     if save_dir is None:
@@ -111,7 +137,7 @@ def download_pictures(urls, save_dir, search, n):
     print('Done. (%.1fs)' % (time.time() - t))
 
 def get_urls(opt):
-    assert opt.stream in ['general','user','group']
+    assert opt.stream in ['general','user','group','album']
 
     if opt.stream == 'general':
         urls = get_stream(search=opt.search,  # search term
@@ -131,6 +157,13 @@ def get_urls(opt):
                            key=opt.key,
                            secret=opt.secret, 
                            ignore=opt.ignore)
+
+    elif opt.stream == 'album':
+          urls = get_album(search=opt.search,  # search term
+                            n=opt.n,  # max number of images
+                            key=opt.key,
+                            secret=opt.secret, 
+                            ignore=opt.ignore)
     
     return urls
 
